@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Serverless Web App</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p.description {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 80%;
+            max-width: 400px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: #24292f;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #response {
+            margin-top: 25px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #d73a49;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>☁️ Serverless Web App</h1>
+
+    <p class="description">
+        Enter your name and send it to the serverless backend.
+    </p>
+
+    <input
+        type="text"
+        id="name"
+        placeholder="Enter your name"
+        aria-label="Name"
+    >
+
+    <br>
+
+    <button id="submitButton" onclick="sendData()">
+        Submit
+    </button>
+
+    <p id="response"></p>
+
+    <script>
+        // Replace this URL with your actual API Gateway endpoint.
+        const API_URL =
+            "https://your-api-id.execute-api.region.amazonaws.com/dev/submit";
+
+        async function sendData() {
+            const nameInput = document.getElementById("name");
+            const responseElement = document.getElementById("response");
+            const submitButton = document.getElementById("submitButton");
+
+            const name = nameInput.value.trim();
+
+            if (!name) {
+                responseElement.textContent = "Please enter your name.";
+                responseElement.className = "error";
+                return;
+            }
+
+            submitButton.disabled = true;
+            responseElement.textContent = "Sending...";
+            responseElement.className = "";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Request failed with status ${response.status}`
+                    );
+                }
+
+                const data = await response.json();
+
+                responseElement.textContent =
+                    data.message || "Request completed successfully.";
+
+            } catch (error) {
+                console.error("Error:", error);
+
+                responseElement.textContent =
+                    "Unable to connect to the server. Please try again.";
+
+                responseElement.className = "error";
+
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>
